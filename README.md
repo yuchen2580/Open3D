@@ -42,6 +42,83 @@ the open-source community.
 
 For more, please visit the [Open3D documentation](http://www.open3d.org/docs).
 
+## Installation on Jetson
+
+Follow the instruction on [Open3D ARM documentation](http://www.open3d.org/docs/release/arm.html) to install the dependency first,
+for example:
+```
+sudo apt-get update -y
+sudo apt-get install -y apt-utils build-essential git cmake
+sudo apt-get install -y python3 python3-dev python3-pip
+sudo apt-get install -y xorg-dev libglu1-mesa-dev
+sudo apt-get install -y libblas-dev liblapack-dev liblapacke-dev
+sudo apt-get install -y libsdl2-dev libc++-7-dev libc++abi-7-dev libxi-dev
+sudo apt-get install -y clang-7
+```
+
+Then we need to change the default cblas.h:
+```angular2html
+cd /usr/include/aarch64-linux-gnu
+sudo ln -sf cblas-netlib.h cblas.h
+```
+
+(optional)Then we can update the repository, by the method described by Github: 
+[update fork](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/syncing-a-fork).
+
+Then we clone the directory (shutong's copy)
+```angular2html
+git clone --recursive https://github.com/ricardodong/Open3D
+cd Open3D
+git submodule update --init --recursive
+mkdir build
+cd build
+```
+
+Then we do cmake, go to [shutong_cmake.txt](shutong_cmake.txt), copy and cmake command and run in terminal,
+for example:
+```angular2html
+cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_CUDA_MODULE=ON \
+    -DBUILD_GUI=ON \
+    -DBUILD_TENSORFLOW_OPS=OFF \
+    -DBUILD_PYTORCH_OPS=OFF \
+    -DBUILD_UNIT_TESTS=ON \
+    -DCMAKE_INSTALL_PREFIX=~/open3d_install \
+    -DPYTHON_EXECUTABLE=$(which python) \
+    ..
+```
+
+Then we can make: 
+```make -j$(nproc)```
+
+Then we can test cpp build:
+```angular2html
+make tests -j$(nproc)
+./bin/tests --gtest_filter="-*Reduce*Sum*"
+```
+
+for the current build, we observe an error of not able to transform uint8 to float32:
+```angular2html
+C++ exception with description 
+/home/correct-ai/Open3D/cpp/open3d/t/geometry/Image.cpp:163: 
+Conversion from UInt8 to Float32 on device CUDA:0 is not implemented!
+```
+
+Then we do the installation (sudo not required!):
+```angular2html
+make install
+```
+
+At last we install python and we can test it:
+```angular2html
+make install-pip-package -j$(nproc)
+python -c "import open3d; print(open3d)"
+```
+
+It's done!
+
 ## Python quick start
 
 Pre-built pip and conda packages support Ubuntu 18.04+, macOS 10.14+ and
