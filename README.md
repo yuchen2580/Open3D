@@ -129,7 +129,7 @@ Windows 10 (64-bit) with Python 3.6-3.9.
 $ pip install open3d
 
 # Test the installation
-$ python -c "import open3d as o3d; print(o3d)"
+$ python3 -c "import open3d as o3d; print(o3d)"
 
 ```
 
